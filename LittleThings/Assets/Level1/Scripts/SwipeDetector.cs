@@ -1,63 +1,104 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using System;
 
 public class SwipeDetector : MonoBehaviour
 {
+    [Header("Input Actions")]
+    public InputActionAsset inputActions;
+
     public float minSwipeDistance = 20f;
 
-    public event Action<SwipeData> OnSwipeDetected;
+    public event Action<SwipeData> OnSwipe;
+
+    private InputAction touchPress;
+    private InputAction touchPosition;
+    private InputAction mousePress;
+    private InputAction mousePosition;
 
     private Vector2 startPos;
     private float startTime;
+    private bool isPressed;
 
-    void Update()
+    private void Awake()
     {
-#if UNITY_EDITOR
-        HandleMouse();
-#else
-        HandleTouch();
-#endif
+        var map = inputActions.FindActionMap("TouchControls", true);
+
+        touchPress = map.FindAction("PrimaryContact", true);
+        touchPosition = map.FindAction("PrimaryPosition", true);
+
+        mousePress = map.FindAction("MouseContact", true);
+        mousePosition = map.FindAction("MousePosition", true);
     }
 
-    void HandleTouch()
+    private void OnEnable()
     {
-        if (Input.touchCount == 0) return;
+        inputActions.Enable();
 
-        Touch t = Input.GetTouch(0);
+        touchPress.started += OnPressStartedTouch;
+        touchPress.canceled += OnPressEndedTouch;
 
-        if (t.phase == TouchPhase.Began)
-        {
-            startPos = t.position;
-            startTime = Time.time;
-        }
-        else if (t.phase == TouchPhase.Ended)
-        {
-            ProcessSwipe(t.position, Time.time - startTime);
-        }
+        mousePress.started += OnPressStartedMouse;
+        mousePress.canceled += OnPressEndedMouse;
     }
 
-    void HandleMouse()
+    private void OnDisable()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            startPos = Input.mousePosition;
-            startTime = Time.time;
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            ProcessSwipe(Input.mousePosition, Time.time - startTime);
-        }
+        inputActions.Disable();
+
+        touchPress.started -= OnPressStartedTouch;
+        touchPress.canceled -= OnPressEndedTouch;
+
+        mousePress.started -= OnPressStartedMouse;
+        mousePress.canceled -= OnPressEndedMouse;
     }
 
-    void ProcessSwipe(Vector2 endPos, float duration)
+    private void OnPressStartedTouch(InputAction.CallbackContext ctx)
     {
+        Debug.Log("Touch Press Started");
+
+        isPressed = true;
+        startTime = Time.time;
+        startPos = touchPosition.ReadValue<Vector2>();
+    }
+
+    private void OnPressEndedTouch(InputAction.CallbackContext ctx)
+    {
+        Debug.Log("Touch Press Ended");
+
+        HandleSwipe(touchPosition.ReadValue<Vector2>());
+    }
+
+    private void OnPressStartedMouse(InputAction.CallbackContext ctx)
+    {
+        Debug.Log("Mouse Press Started");
+
+        isPressed = true;
+        startTime = Time.time;
+        startPos = mousePosition.ReadValue<Vector2>();
+    }
+
+    private void OnPressEndedMouse(InputAction.CallbackContext ctx)
+    {
+        Debug.Log("Mouse Press Ended");
+
+        HandleSwipe(mousePosition.ReadValue<Vector2>());
+    }
+
+    private void HandleSwipe(Vector2 endPos)
+    {
+        if (!isPressed) return;
+        isPressed = false;
+
+        float duration = Time.time - startTime;
+
         Vector2 delta = endPos - startPos;
         float distance = delta.magnitude;
 
         if (distance < minSwipeDistance)
             return;
 
-        SwipeData data = new SwipeData()
+        SwipeData swipe = new SwipeData
         {
             StartPos = startPos,
             EndPos = endPos,
@@ -68,9 +109,10 @@ public class SwipeDetector : MonoBehaviour
             Angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg
         };
 
-        if (data.Angle < 0)
-            data.Angle += 360;
+        if (swipe.Angle < 0)
+            swipe.Angle += 360f;
 
-        OnSwipeDetected?.Invoke(data);
+        Debug.Log("Swipe detected!");
+        OnSwipe?.Invoke(swipe);
     }
 }

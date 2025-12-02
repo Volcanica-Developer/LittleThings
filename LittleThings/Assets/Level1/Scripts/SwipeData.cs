@@ -4,9 +4,9 @@ public struct SwipeData
 {
     public Vector2 StartPos;
     public Vector2 EndPos;
-    public Vector2 Direction;     // Normalized
-    public float Distance;        // In pixels
-    public float Duration;        // In seconds
-    public float Speed;           // Distance / Duration
-    public float Angle;           // 0-360 degrees
+    public Vector2 Direction;   // normalized
+    public float Distance;      // px
+    public float Duration;      // seconds
+    public float Speed;         // px/sec
+    public float Angle;         // degrees 0-360
 }

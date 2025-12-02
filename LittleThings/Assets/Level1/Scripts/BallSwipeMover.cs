@@ -3,23 +3,21 @@ using UnityEngine;
 public class BallSwipeMover : MonoBehaviour
 {
     public float powerMultiplier = 0.02f;
-    private SwipeDetector detector;
     private Rigidbody rb;
+    private SwipeDetector swipeDetector;
 
     void Start()
     {
-        detector = FindFirstObjectByType<SwipeDetector>();
         rb = GetComponent<Rigidbody>();
+        swipeDetector = FindFirstObjectByType<SwipeDetector>();
 
-        detector.OnSwipeDetected += OnSwipe;
+        swipeDetector.OnSwipe += MoveBall;
     }
 
-    void OnSwipe(SwipeData swipe)
+    void MoveBall(SwipeData swipe)
     {
-        // Convert 2D direction into world (camera downwards)
-        Vector3 worldDir = new Vector3(swipe.Direction.x, 0, swipe.Direction.y);
+        Vector3 worldDir = new Vector3(swipe.Direction.x, Mathf.Abs(swipe.Direction.x) + Mathf.Abs(swipe.Direction.y), swipe.Direction.y);
 
-        // Speed = pixels per second * multiplier
         float force = swipe.Speed * powerMultiplier;
 
         rb.AddForce(worldDir * force, ForceMode.Impulse);
