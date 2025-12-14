@@ -55,7 +55,7 @@ public class SwipeDetector : MonoBehaviour
 
     private void OnPressStartedTouch(InputAction.CallbackContext ctx)
     {
-        Debug.Log("Touch Press Started");
+        //Debug.Log("Touch Press Started");
 
         isPressed = true;
         startTime = Time.time;
@@ -64,14 +64,14 @@ public class SwipeDetector : MonoBehaviour
 
     private void OnPressEndedTouch(InputAction.CallbackContext ctx)
     {
-        Debug.Log("Touch Press Ended");
+        //Debug.Log("Touch Press Ended");
 
         HandleSwipe(touchPosition.ReadValue<Vector2>());
     }
 
     private void OnPressStartedMouse(InputAction.CallbackContext ctx)
     {
-        Debug.Log("Mouse Press Started");
+        //Debug.Log("Mouse Press Started");
 
         isPressed = true;
         startTime = Time.time;
@@ -80,7 +80,7 @@ public class SwipeDetector : MonoBehaviour
 
     private void OnPressEndedMouse(InputAction.CallbackContext ctx)
     {
-        Debug.Log("Mouse Press Ended");
+        //Debug.Log("Mouse Press Ended");
 
         HandleSwipe(mousePosition.ReadValue<Vector2>());
     }
