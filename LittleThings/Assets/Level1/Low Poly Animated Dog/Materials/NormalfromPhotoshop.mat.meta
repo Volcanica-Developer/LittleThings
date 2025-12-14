@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 983e656309f02ae4e879c65bb5e56984
+timeCreated: 1548854192
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 66214
+  packageName: Low Poly Animated Dog
+  packageVersion: 1.2
+  assetPath: Assets/Low Poly Animated Dog/Materials/NormalfromPhotoshop.mat
+  uploadId: 291050

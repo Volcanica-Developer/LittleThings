@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: c7fcaafead3b6a24787e99f690666938
+timeCreated: 1548853589
+licenseType: Store
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 66214
+  packageName: Low Poly Animated Dog
+  packageVersion: 1.2
+  assetPath: Assets/Low Poly Animated Dog/Example/Scripts/ButtonResponderSimpleDogSpecific.cs
+  uploadId: 291050

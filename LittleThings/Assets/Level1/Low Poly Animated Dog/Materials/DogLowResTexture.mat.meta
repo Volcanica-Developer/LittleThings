@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d868d0edeab7d074aa48710f919a9e01
+timeCreated: 1467372468
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 66214
+  packageName: Low Poly Animated Dog
+  packageVersion: 1.2
+  assetPath: Assets/Low Poly Animated Dog/Materials/DogLowResTexture.mat
+  uploadId: 291050
