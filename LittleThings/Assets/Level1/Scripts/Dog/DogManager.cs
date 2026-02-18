@@ -7,8 +7,10 @@ public class DogManager : MonoBehaviour
 
     [Header("References")]
     public BallTracker ballTracker;
-    public FootprintAnimator footprintAnimator;
+    public DogAnimator dogAnimator;
     public SoundController sounds;
+    public Transform dog;
+    public Transform mTarget;
 
     [Header("Dog Movement (simulation)")]
     public float walkSpeed = 1.2f;
@@ -38,10 +40,10 @@ public class DogManager : MonoBehaviour
 
     void Start()
     {
-        idleCenter = ballTracker ? ballTracker.originTransform.position : Vector3.zero;
-        simulatedPosition = idleCenter;
+        //idleCenter = ballTracker ? ballTracker.originTransform.position : Vector3.zero;
+        //simulatedPosition = idleCenter;
 
-        footprintAnimator.ResetStepCycle(simulatedPosition);
+        //footprintAnimator.ResetStepCycle(simulatedPosition);
 
         ballTracker.OnThrown += HandleBallThrown;
         ballTracker.OnStopped += HandleBallStopped;
@@ -65,9 +67,9 @@ public class DogManager : MonoBehaviour
         switch (state)
         {
             case DogState.Idle: currentCoroutine = StartCoroutine(IdleRoutine()); break;
-            case DogState.Curious: currentCoroutine = StartCoroutine(CuriousRoutine()); break;
-            case DogState.Playful: currentCoroutine = StartCoroutine(PlayfulRoutine()); break;
-            case DogState.Excited: currentCoroutine = StartCoroutine(ExcitedRoutine()); break;
+            //case DogState.Curious: currentCoroutine = StartCoroutine(CuriousRoutine()); break;
+            //case DogState.Playful: currentCoroutine = StartCoroutine(PlayfulRoutine()); break;
+            //case DogState.Excited: currentCoroutine = StartCoroutine(ExcitedRoutine()); break;
         }
     }
 
@@ -75,147 +77,171 @@ public class DogManager : MonoBehaviour
 
     void HandleBallThrown(Vector3 startPos, Vector3 velocity)
     {
+        Debug.Log("HandleBallThrown");
         sounds?.PlayBark(1f);
-        if (currentCoroutine != null) StopCoroutine(currentCoroutine);
-        currentCoroutine = StartCoroutine(FetchRoutine());
+        //if (currentCoroutine != null) StopCoroutine(currentCoroutine);
+        //currentCoroutine = StartCoroutine(FetchRoutine());
+        runTowardsTheBall = true;
+        dogAnimator.Run();
     }
 
     void HandleBallStopped(Vector3 pos) { }
     void HandleBallReturnedToOrigin()
     {
+        Debug.Log("HandleBallReturnedToOrigin");
         if (currentCoroutine != null) StopCoroutine(currentCoroutine);
         currentCoroutine = StartCoroutine(ReturnCelebrateRoutine());
+    }
+    void ReachedBallPosition()
+    {
+        runTowardsTheBall = false;
+        returnTheBall = true;
+    }
+
+    void ReachedOrigin()
+    {
+        returnTheBall = false;
+        dogAnimator.Idle();
     }
 
     // ---------------- BEHAVIOR ROUTINES ----------------
 
     IEnumerator IdleRoutine()
     {
-        float timer = 0f;
+        //float timer = 0f;
 
-        while (true)
-        {
-            Vector2 rnd = Random.insideUnitCircle * 5.6f;
-            Vector3 target = idleCenter + new Vector3(rnd.x, 0, rnd.y);
+        //while (true)
+        //{
+        //    Vector2 rnd = Random.insideUnitCircle * 5.6f;
+        //    //Vector3 target = idleCenter + new Vector3(rnd.x, 0, rnd.y);
 
-            yield return StartCoroutine(MoveToRoutine(target, walkSpeed));
+        //    yield return StartCoroutine(MoveToRoutine(mTarget.position, walkSpeed));
 
-            if (Random.value < 0.35f)
-            {
-                footprintAnimator.SpawnCirclePattern(simulatedPosition, 1.25f, 10, 1.2f);
-                sounds?.PlayYip(0.6f);
-                footprintAnimator.PauseSteps(0.4f);
-                yield return new WaitForSeconds(0.6f);
-            }
+        //    if (Random.value < 0.35f)
+        //    {
+        //        //footprintAnimator.SpawnCirclePattern(simulatedPosition, 1.25f, 10, 1.2f);
+        //        sounds?.PlayYip(0.6f);
+        //        //footprintAnimator.PauseSteps(0.4f);
+        //        yield return new WaitForSeconds(0.6f);
+        //    }
 
             yield return new WaitForSeconds(10.4f);
 
-            timer += 1f;
-            //if (timer > idleToCuriousAfter) { SetState(DogState.Curious); yield break; }
-            //if (Random.value < playfulChancePerCycle) { SetState(DogState.Playful); yield break; }
-        }
+        //    timer += 1f;
+        //    //if (timer > idleToCuriousAfter) { SetState(DogState.Curious); yield break; }
+        //    //if (Random.value < playfulChancePerCycle) { SetState(DogState.Playful); yield break; }
+        //}
     }
 
     IEnumerator CuriousRoutine()
     {
-        float duration = Random.Range(curiousDurationMin, curiousDurationMax);
-        float t = 0f;
+        //float duration = Random.Range(curiousDurationMin, curiousDurationMax);
+        //float t = 0f;
 
-        while (t < duration)
-        {
-            Vector2 rnd = Random.insideUnitCircle * (2f + Random.value * 4f);
-            Vector3 target = idleCenter + new Vector3(rnd.x, 0, rnd.y);
+        //while (t < duration)
+        //{
+        //    Vector2 rnd = Random.insideUnitCircle * (2f + Random.value * 4f);
+        //    Vector3 target = idleCenter + new Vector3(rnd.x, 0, rnd.y);
 
-            yield return StartCoroutine(MoveToRoutine(target, walkSpeed * 0.9f));
+        //    yield return StartCoroutine(MoveToRoutine(target, walkSpeed * 0.9f));
 
-            sounds?.PlaySniff(0.5f);
-            footprintAnimator.SpawnScramble(simulatedPosition, 0.25f, 5);
-            footprintAnimator.PauseSteps(0.25f);
+        //    sounds?.PlaySniff(0.5f);
+        //    footprintAnimator.SpawnScramble(simulatedPosition, 0.25f, 5);
+        //    footprintAnimator.PauseSteps(0.25f);
             yield return new WaitForSeconds(1f);
 
-            t += 1f;
-        }
+        //    t += 1f;
+        //}
 
         //SetState(DogState.Idle);
     }
 
     IEnumerator PlayfulRoutine()
     {
-        float end = Time.time + (2f + Random.value * 2.5f);
+        //float end = Time.time + (2f + Random.value * 2.5f);
 
-        while (Time.time < end)
-        {
-            footprintAnimator.SpawnCirclePattern(simulatedPosition, 0.45f, 14, 0.9f);
-            footprintAnimator.PauseSteps(0.2f);
+        //while (Time.time < end)
+        //{
+        //    footprintAnimator.SpawnCirclePattern(simulatedPosition, 0.45f, 14, 0.9f);
+        //    footprintAnimator.PauseSteps(0.2f);
 
-            sounds?.PlayYip(0.8f);
-            yield return new WaitForSeconds(1f);
+        //    sounds?.PlayYip(0.8f);
+        //    yield return new WaitForSeconds(1f);
 
-            footprintAnimator.SpawnScramble(simulatedPosition, 0.6f, 8);
-            footprintAnimator.PauseSteps(0.2f);
+        //    footprintAnimator.SpawnScramble(simulatedPosition, 0.6f, 8);
+        //    footprintAnimator.PauseSteps(0.2f);
 
             yield return new WaitForSeconds(0.8f);
-        }
+        //}
 
         //SetState(DogState.Idle);
     }
 
     IEnumerator ExcitedRoutine()
     {
-        sounds?.PlayBark(1f);
-        footprintAnimator.SpawnScramble(simulatedPosition, 0.25f, 8);
-        footprintAnimator.PauseSteps(0.2f);
+        //sounds?.PlayBark(1f);
+        //footprintAnimator.SpawnScramble(simulatedPosition, 0.25f, 8);
+        //footprintAnimator.PauseSteps(0.2f);
 
         yield return new WaitForSeconds(0.4f);
 
-        currentCoroutine = StartCoroutine(FetchRoutine());
+        //currentCoroutine = StartCoroutine(FetchRoutine());
     }
 
     IEnumerator FetchRoutine()
     {
         state = DogState.Fetching;
 
-        float timeout = Time.time + 6f;
+        //float timeout = Time.time + 6f;
 
-        while (Time.time < timeout)
-        {
-            Vector3 ballPos = ballTracker.transform.position;
-            Vector3 toBall = (ballPos - simulatedPosition).WithY(0);
-            float dist = toBall.magnitude;
+        //while (Time.time < timeout)
+        //{
+        //    Vector3 ballPos = ballTracker.transform.position;
+        //    Vector3 toBall = (ballPos - simulatedPosition).WithY(0);
+        //    float dist = toBall.magnitude;
 
-            Vector3 noisyDir =
-                (toBall.normalized +
-                 Random.insideUnitSphere.WithY(0) * pathNoise * 0.15f).normalized;
+        //    Vector3 noisyDir =
+        //        (toBall.normalized +
+        //         Random.insideUnitSphere.WithY(0) * pathNoise * 0.15f).normalized;
 
-            simulatedFacing =
-                Vector3.Slerp(simulatedFacing, noisyDir, Time.deltaTime * turnSpeed);
+        //    simulatedFacing =
+        //        Vector3.Slerp(simulatedFacing, noisyDir, Time.deltaTime * turnSpeed);
 
-            simulatedPosition += simulatedFacing * runSpeed * Time.deltaTime;
+        //    //simulatedPosition += simulatedFacing * runSpeed * Time.deltaTime;
+        //    simulatedPosition += Vector3.Lerp(dog.position, ballPos, runSpeed * Time.deltaTime);
+        //    dog.position = simulatedPosition;
+        //    //footprintAnimator.StepAlongPath(simulatedPosition, simulatedFacing);
 
-            footprintAnimator.StepAlongPath(simulatedPosition, simulatedFacing);
+        //    if (dist <= fetchApproachDistance)
+        //    {
+        //        sounds?.PlaySniff(0.8f);
 
-            if (dist <= fetchApproachDistance)
-            {
-                sounds?.PlaySniff(0.8f);
+        //        //footprintAnimator.SpawnScramble(ballPos, pickupScrambleRadius, 10);
+        //        //footprintAnimator.PauseSteps(0.2f);
 
-                footprintAnimator.SpawnScramble(ballPos, pickupScrambleRadius, 10);
-                footprintAnimator.PauseSteps(0.2f);
+        //        yield return new WaitForSeconds(0.4f);
 
-                yield return new WaitForSeconds(0.4f);
+        //        //footprintAnimator.SpawnCirclePattern(ballPos, 0.25f, 10, 0.8f);
+        //        //footprintAnimator.PauseSteps(0.2f);
 
-                footprintAnimator.SpawnCirclePattern(ballPos, 0.25f, 10, 0.8f);
-                footprintAnimator.PauseSteps(0.2f);
+        //        sounds?.PlayBark(0.9f);
 
-                sounds?.PlayBark(0.9f);
+        //        StartCoroutine(ReturningRoutine());
+        //        yield break;
+        //    }
 
-                StartCoroutine(ReturningRoutine());
-                yield break;
-            }
-
-            yield return null;
-        }
+        //    yield return null;
+        //}
 
         //SetState(DogState.Curious);
+        bool moving = true;
+        while (moving)
+        {
+            dog.position = Vector3.Lerp(ballTracker.transform.position, dog.position, runSpeed * Time.deltaTime);
+            Mathf.Approximately(Vector3.Distance(dog.position, ballTracker.transform.position), 0f);
+            moving = false;
+        }
+        yield return null;
     }
 
     IEnumerator ReturningRoutine()
@@ -234,18 +260,18 @@ public class DogManager : MonoBehaviour
 
             simulatedPosition += simulatedFacing * (runSpeed * 0.85f) * Time.deltaTime;
 
-            footprintAnimator.StepAlongPath(simulatedPosition, simulatedFacing);
-
+            //footprintAnimator.StepAlongPath(simulatedPosition, simulatedFacing);
+            dog.position = simulatedPosition;
             yield return null;
         }
 
         sounds?.PlayThud(1f);
 
-        footprintAnimator.SpawnScramble(simulatedPosition, 0.25f, 6);
-        footprintAnimator.PauseSteps(0.2f);
+        //footprintAnimator.SpawnScramble(simulatedPosition, 0.25f, 6);
+        //footprintAnimator.PauseSteps(0.2f);
 
-        footprintAnimator.SpawnCirclePattern(simulatedPosition, 0.18f, 8, 0.6f);
-        footprintAnimator.PauseSteps(0.2f);
+        //footprintAnimator.SpawnCirclePattern(simulatedPosition, 0.18f, 8, 0.6f);
+        //footprintAnimator.PauseSteps(0.2f);
 
         yield return new WaitForSeconds(1f);
 
@@ -254,13 +280,13 @@ public class DogManager : MonoBehaviour
 
     IEnumerator ReturnCelebrateRoutine()
     {
-        sounds?.PlayBark(1f);
+        //sounds?.PlayBark(1f);
 
-        footprintAnimator.SpawnCirclePattern(idleCenter, 0.35f, 14, 0.9f);
-        footprintAnimator.PauseSteps(0.2f);
+        //footprintAnimator.SpawnCirclePattern(idleCenter, 0.35f, 14, 0.9f);
+        //footprintAnimator.PauseSteps(0.2f);
 
-        footprintAnimator.SpawnScramble(idleCenter, 0.5f, 8);
-        footprintAnimator.PauseSteps(0.2f);
+        //footprintAnimator.SpawnScramble(idleCenter, 0.5f, 8);
+        //footprintAnimator.PauseSteps(0.2f);
 
         yield return new WaitForSeconds(1.2f);
 
@@ -283,30 +309,65 @@ public class DogManager : MonoBehaviour
                 Vector3.Slerp(simulatedFacing, noisy, Time.deltaTime * turnSpeed);
 
             simulatedPosition += simulatedFacing * speed * Time.deltaTime;
-
-            footprintAnimator.StepAlongPath(simulatedPosition, simulatedFacing);
+            dog.position = simulatedPosition;
+            //footprintAnimator.StepAlongPath(simulatedPosition, simulatedFacing);
 
             yield return null;
         }
     }
+    bool runTowardsTheBall = false;
+    bool returnTheBall = false;
+    private void Update()
+    {
+        if (runTowardsTheBall)
+        {
+            dog.LookAt(ballTracker.transform.position);
+            dog.position = Vector3.MoveTowards(
+                dog.position,
+                ballTracker.transform.position,
+                runSpeed * Time.deltaTime
+            );            
+
+            if (Vector3.Distance(dog.position, ballTracker.transform.position) < 0.05f)
+            {
+                ReachedBallPosition();
+            }
+        }
+
+        if (returnTheBall)
+        {
+            dog.LookAt(ballTracker.originTransform);
+            dog.position = Vector3.MoveTowards(
+                dog.position,
+                ballTracker.originTransform.position,
+                runSpeed * Time.deltaTime
+            );
+            
+            if (Vector3.Distance(dog.position, ballTracker.originTransform.position) < 0.05f)
+            {
+                ReachedOrigin();
+            }
+        }
+
+    }
 
 #if UNITY_EDITOR
-    void Update()
-    {
-        DebugDrawSimulatedDog();
-        //Debug.Log($"DogPos: {simulatedPosition}, Facing: {simulatedFacing}");
-    }
+    //void Update()
+    //{
+    //    DebugDrawSimulatedDog();
+    //    //Debug.Log($"DogPos: {simulatedPosition}, Facing: {simulatedFacing}");
+    //}
 
-    void DebugDrawSimulatedDog()
-    {
-        Debug.DrawLine(simulatedPosition + Vector3.up * 0.05f,
-                       simulatedPosition + simulatedFacing * 0.3f + Vector3.up * 0.05f,
-                       Color.green);
+    //void DebugDrawSimulatedDog()
+    //{
+    //    Debug.DrawLine(simulatedPosition + Vector3.up * 0.05f,
+    //                   simulatedPosition + simulatedFacing * 0.3f + Vector3.up * 0.05f,
+    //                   Color.green);
 
-        Debug.DrawLine(idleCenter + Vector3.up * 0.03f,
-                       idleCenter + Vector3.forward * 0.2f + Vector3.up * 0.03f,
-                       Color.yellow);
-    }
+    //    Debug.DrawLine(idleCenter + Vector3.up * 0.03f,
+    //                   idleCenter + Vector3.forward * 0.2f + Vector3.up * 0.03f,
+    //                   Color.yellow);
+    //}
 #endif
 }
 

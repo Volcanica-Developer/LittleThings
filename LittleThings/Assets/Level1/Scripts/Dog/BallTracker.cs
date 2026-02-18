@@ -24,12 +24,17 @@ public class BallTracker : MonoBehaviour
     [Header("Origin (assign in inspector)")]
     public Transform originTransform;
 
+    public float slowdownSpeed = 10f;
+
     Rigidbody rb;
 
     // internal
     bool wasInMotion = false;
+    bool slowingDown = false;
     float slowTimer = 0f;
     Vector3 lastSeenVelocity = Vector3.zero;
+    Vector3 slowdownAngularVelocity = Vector3.zero;
+    Vector3 slowdownLinearVelocity = Vector3.zero;
 
     // small grace window: if a swipe applies force in Update, allow the next FixedUpdate to catch it
     const float graceWindow = 0.06f; // seconds
@@ -67,6 +72,7 @@ public class BallTracker : MonoBehaviour
             if (speed >= thrownVelocityThreshold || graceTriggered)
             {
                 wasInMotion = true;
+                slowingDown = false;
                 slowTimer = 0f;
                 lastSeenVelocity = rb.linearVelocity;
                 Vector3 startPos = transform.position;
@@ -84,11 +90,12 @@ public class BallTracker : MonoBehaviour
                 slowTimer += Time.fixedDeltaTime;
                 if (slowTimer >= stopTimeRequired)
                 {
-                    wasInMotion = false;
+                    slowingDown = true;
                     slowTimer = 0f;
                     Debug.Log("[BallTracker] OnStopped fired");
                     OnStopped?.Invoke(transform.position);
-
+                    slowdownAngularVelocity = rb.angularVelocity;
+                    slowdownLinearVelocity = rb.linearVelocity;
                     // returned to origin?
                     if (originTransform != null &&
                         Vector3.Distance(transform.position, originTransform.position) <= originSnapDistance)
@@ -101,6 +108,20 @@ public class BallTracker : MonoBehaviour
             else
             {
                 slowTimer = 0f;
+            }
+        }
+
+        if (slowingDown)
+        {
+            Debug.Log("[BallTracker] Slowing down: " + rb.linearVelocity.sqrMagnitude);
+            rb.angularVelocity = Vector3.Lerp(slowdownAngularVelocity, Vector3.zero, slowdownSpeed * Time.deltaTime);
+            rb.linearVelocity = Vector3.Lerp(slowdownLinearVelocity, Vector3.zero, slowdownSpeed * Time.deltaTime);
+            if(rb.linearVelocity.sqrMagnitude <= 0.1f)
+            {
+                rb.angularVelocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
+                slowingDown = false;
+                wasInMotion = false;
             }
         }
 
