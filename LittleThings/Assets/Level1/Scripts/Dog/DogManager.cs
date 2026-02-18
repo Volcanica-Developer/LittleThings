@@ -27,6 +27,10 @@ public class DogManager : MonoBehaviour
     public float fetchApproachDistance = 0.4f;
     public float pickupScrambleRadius = 0.4f;
 
+    [Header("Carry Ball")]
+    [Tooltip("Offset from dog position (forward, up) for carried ball")]
+    public Vector2 carryOffset = new Vector2(0.4f, 0.15f);
+
     [Header("Randomness (Option B)")]
     public float pathNoise = 0.6f;
 
@@ -95,13 +99,45 @@ public class DogManager : MonoBehaviour
     void ReachedBallPosition()
     {
         runTowardsTheBall = false;
+        PickUpBall();
         returnTheBall = true;
     }
 
     void ReachedOrigin()
     {
         returnTheBall = false;
+        DropBallAtOrigin();
         dogAnimator.Idle();
+        if (currentCoroutine != null) StopCoroutine(currentCoroutine);
+        currentCoroutine = StartCoroutine(ReturnCelebrateRoutine());
+    }
+
+    void PickUpBall()
+    {
+        if (ballTracker == null) return;
+        var rb = ballTracker.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+        ballIsCarried = true;
+    }
+
+    void DropBallAtOrigin()
+    {
+        if (ballTracker == null) return;
+        ballIsCarried = false;
+        var rb = ballTracker.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        ballTracker.transform.position = ballTracker.originTransform.position;
+        ballTracker.NotifyDroppedAtOrigin();
     }
 
     // ---------------- BEHAVIOR ROUTINES ----------------
@@ -317,6 +353,8 @@ public class DogManager : MonoBehaviour
     }
     bool runTowardsTheBall = false;
     bool returnTheBall = false;
+    bool ballIsCarried = false;
+
     private void Update()
     {
         if (runTowardsTheBall)
@@ -342,6 +380,12 @@ public class DogManager : MonoBehaviour
                 ballTracker.originTransform.position,
                 runSpeed * Time.deltaTime
             );
+
+            if (ballIsCarried)
+            {
+                Vector3 offset = dog.forward * carryOffset.x + Vector3.up * carryOffset.y;
+                ballTracker.transform.position = dog.position + offset;
+            }
             
             if (Vector3.Distance(dog.position, ballTracker.originTransform.position) < 0.05f)
             {

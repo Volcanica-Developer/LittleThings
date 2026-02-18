@@ -129,5 +129,23 @@ public class BallTracker : MonoBehaviour
         lastSeenVelocity = rb.linearVelocity;
     }
 
+    /// <summary>
+    /// Call when the ball is dropped at origin (e.g. by the dog). Resets position, velocity and internal state.
+    /// Does not invoke OnReturnedToOrigin (caller handles celebration).
+    /// </summary>
+    public void NotifyDroppedAtOrigin()
+    {
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        if (originTransform != null)
+            transform.position = originTransform.position;
+        wasInMotion = false;
+        slowingDown = false;
+        slowTimer = 0f;
+    }
+
     // Optional: if other scripts set velocity directly (rb.velocity = ...), call NotifyPotentialThrow() after.
 }
