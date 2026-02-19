@@ -13,7 +13,7 @@ public class DogManager : MonoBehaviour
     public Transform mTarget;
 
     [Header("Dog Movement (simulation)")]
-    public float walkSpeed = 1.2f;
+    public float walkSpeed = 2.4f;
     public float runSpeed = 4.5f;
     public float turnSpeed = 6f;
 
@@ -26,6 +26,8 @@ public class DogManager : MonoBehaviour
     [Header("Fetch Settings")]
     public float fetchApproachDistance = 0.4f;
     public float pickupScrambleRadius = 0.4f;
+    [Tooltip("Throw velocity above this = run. Below = walk.")]
+    public float runVelocityThreshold = 3f;
 
     [Header("Carry Ball")]
     [Tooltip("Offset from dog position (forward, up) for carried ball")]
@@ -83,10 +85,12 @@ public class DogManager : MonoBehaviour
     {
         Debug.Log("HandleBallThrown");
         sounds?.PlayBark(1f);
-        //if (currentCoroutine != null) StopCoroutine(currentCoroutine);
-        //currentCoroutine = StartCoroutine(FetchRoutine());
+        fetchIsRunMode = velocity.magnitude >= runVelocityThreshold;
         runTowardsTheBall = true;
-        dogAnimator.Run();
+        if (fetchIsRunMode)
+            dogAnimator.Run();
+        else
+            dogAnimator.Walk();
     }
 
     void HandleBallStopped(Vector3 pos) { }
@@ -354,16 +358,21 @@ public class DogManager : MonoBehaviour
     bool runTowardsTheBall = false;
     bool returnTheBall = false;
     bool ballIsCarried = false;
+    bool fetchIsRunMode = true;
+
+    float CurrentFetchSpeed => fetchIsRunMode ? runSpeed : walkSpeed;
 
     private void Update()
     {
+        float speed = CurrentFetchSpeed;
+
         if (runTowardsTheBall)
         {
             dog.LookAt(ballTracker.transform.position);
             dog.position = Vector3.MoveTowards(
                 dog.position,
                 ballTracker.transform.position,
-                runSpeed * Time.deltaTime
+                speed * Time.deltaTime
             );            
 
             if (Vector3.Distance(dog.position, ballTracker.transform.position) < 0.05f)
@@ -378,7 +387,7 @@ public class DogManager : MonoBehaviour
             dog.position = Vector3.MoveTowards(
                 dog.position,
                 ballTracker.originTransform.position,
-                runSpeed * Time.deltaTime
+                speed * Time.deltaTime
             );
 
             if (ballIsCarried)
