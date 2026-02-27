@@ -3,8 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Tips a 3D box in the direction of arrow key presses. Simple mechanism: rotate + move in the same direction,
-/// with matching speeds so it looks like a natural tip.
+/// Moves a 3D box in the direction of arrow key presses (no rotation).
 /// </summary>
 [RequireComponent(typeof(BoxCollider))]
 public class TippableBox : MonoBehaviour
@@ -29,21 +28,21 @@ public class TippableBox : MonoBehaviour
         if (keyboard == null) return;
 
         if (keyboard.rightArrowKey.wasPressedThisFrame)
-            TryTip(Vector3.right, -Vector3.forward);   // move +X, rot -Z
+            TryTip(Vector3.right);
         else if (keyboard.leftArrowKey.wasPressedThisFrame)
-            TryTip(Vector3.left, Vector3.forward);    // move -X, rot +Z
+            TryTip(Vector3.left);
         else if (keyboard.upArrowKey.wasPressedThisFrame)
-            TryTip(Vector3.forward, Vector3.right);   // move +Z, rot +X
+            TryTip(Vector3.forward);
         else if (keyboard.downArrowKey.wasPressedThisFrame)
-            TryTip(Vector3.back, -Vector3.right);     // move -Z, rot -X
+            TryTip(Vector3.back);
     }
 
-    void TryTip(Vector3 moveDirection, Vector3 rotationAxis)
+    void TryTip(Vector3 moveDirection)
     {
-        StartCoroutine(TipCoroutine(moveDirection, rotationAxis));
+        StartCoroutine(TipCoroutine(moveDirection));
     }
 
-    IEnumerator TipCoroutine(Vector3 moveDirection, Vector3 rotationAxis)
+    IEnumerator TipCoroutine(Vector3 moveDirection)
     {
         isTipping = true;
 
@@ -54,11 +53,7 @@ public class TippableBox : MonoBehaviour
         float moveDist = Mathf.Abs(moveDirection.x) > 0.01f ? extents.x : extents.z;
         Vector3 moveOffset = moveDirection.normalized * moveDist + Vector3.down * extents.y;
 
-        Quaternion startRot = transform.rotation;
         Vector3 startPos = transform.position;
-        // Use world-space axes: X and Z only — no Y rotation
-        Vector3 axisWorld = rotationAxis.normalized;
-        Quaternion endRot = startRot * Quaternion.AngleAxis(90f, axisWorld);
         Vector3 endPos = startPos + moveOffset;
 
         float elapsed = 0f;
@@ -67,17 +62,13 @@ public class TippableBox : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / tipDuration);
-            t = t * t * (3f - 2f * t); // smooth step — same t for rotate & move
+            t = t * t * (3f - 2f * t);
 
-            // Interpolate angle on the axis instead of Slerp — keeps rotation on X/Z only, no Y drift
-            float angle = 90f * t;
-            transform.rotation = startRot * Quaternion.AngleAxis(angle, axisWorld);
             transform.position = Vector3.Lerp(startPos, endPos, t);
 
             yield return null;
         }
 
-        transform.rotation = endRot;
         transform.position = endPos;
         isTipping = false;
     }
